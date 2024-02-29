@@ -1,0 +1,111 @@
+import { Request, Response } from 'express';
+
+var Cpus = require('../../models/amdModels/AmdCpusModels');
+
+interface AmdCpus{
+  amcpuname: String,
+  amdcpugen: number,
+  amdcpuversion: number
+}
+
+class AmdCpusController{
+
+  /**
+ * @swagger
+ * /cpu/AMD:
+ *   get:
+ *     summary: Lista todas as CPUs AMD
+ *     description: Retorna uma lista de todas as CPUs AMD.
+ *     responses:
+ *       200:
+ *         description: OK
+ *      404:
+ *        description: Erro, CPUs não encontradas
+ */
+  async index(req: Request, res: Response){
+    var cpus: AmdCpus[] = await Cpus.findAllCpu();
+    res.json(cpus);
+  };
+
+  async findCpu(req: Request, res: Response){
+    var id = req.params.id;
+    var cpu: AmdCpus[] = await Cpus.findByIdCpu(id);
+    if(cpu == undefined){
+      res.status(404);
+      res.json({});
+    }else{
+      res.status(200);
+      res.json(cpu);
+    };
+  };
+
+  async create(req: Request, res: Response){
+    var {amdcpuname, amdcpugen, amdcpuversion} = req.body;
+
+    if(amdcpuname == undefined || amdcpugen == undefined || amdcpuversion == undefined){
+      res.status(406);
+      res.json({err: 'Dados invalidos, confira e tente novamente.'});
+      return;
+    };
+
+    if(amdcpuname == '' || amdcpugen == '' || amdcpuversion == '' || amdcpuname[0] == ' ' || amdcpugen[0] == ' ' || amdcpuversion[0] == ' ' ){
+      res.status(406);
+      res.json({err: 'Você precisa preencher todos os campos corretamente.'});
+      return;
+    };
+
+    var cpuExists = await Cpus.findNameCpu(amdcpuname);
+
+    if(cpuExists){
+      res.status(406);
+      res.json({err: 'A CPU já está cadastrada.'});
+      return;
+    };
+
+    await Cpus.createCpu(amdcpuname, amdcpugen, amdcpuversion);
+    res.status(200);
+    res.send('CPU cadastrada com sucesso!');
+  };
+
+  async edit(req: Request, res: Response){
+    var {id, amdcpuname, amdcpugen, amdcpuversion} = req.body;
+    console.log(id, amdcpuname, amdcpugen, amdcpuversion, '||| Console Edit AmdCpus');
+    var result = await Cpus.UpdateCPU(id, amdcpuname, amdcpugen, amdcpuversion);
+    console.log(result, '||| Console do result edit AmdCpus');
+    if(result != undefined){
+      if(result.status){
+        res.status(200);
+        res.send('CPU atualizada com sucesso!');
+      }else{
+        res.status(404);
+        res.send(result.err);
+      }
+    }else{
+        res.status(406);
+        res.send('Pane no sistema, ocorreu algum erro no servidor!');
+      };;
+  };
+
+  async remove(req: Request, res: Response){
+    var id = req.params.id;
+    var result = await Cpus.Delete(id);
+
+    if(result.status){
+      res.status(200);
+      res.send('CPU deletada com sucesso.');
+    }else{
+      res.status(406);
+      res.send(result);
+    };
+  };
+
+  async compatiblesMotheboardCpu(req: Request, res: Response){
+    var id_motheboard = req.params.id;
+    var compatiblesCPU = await Cpus.veryfingCpusCompatiblesMotheboard(id_motheboard);
+    res.json(compatiblesCPU);
+    console.log(compatiblesCPU);
+  };
+
+};
+
+module.exports = new AmdCpusController();
