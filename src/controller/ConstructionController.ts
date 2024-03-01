@@ -86,6 +86,58 @@ class ConstructionController {
             res.status(500).json({ error: 'An error occurred while creating construction' });
         }
     };
+
+    async UpdateConstructionInfos(req: Request, res: Response) {
+        try {
+            const constructionData = req.body;
+
+            const result = await ConstructionBD.UpdateConstructionInfos(constructionData);
+
+            if (result != undefined) {
+                if (result.status) {
+                    res.status(201);
+                    res.send('Construction updated successfully!');
+                } else {
+                    res.status(406);
+                    res.send('Bad error to updated construction');
+                }
+            }
+        } catch (error) {
+            console.error('Error update construction infos');
+            res.status(500).json({ error: 'Internal server error, please, verify here: line 134 (UpdateConstructionInfos on controller)' });
+        };
+    };
+
+    async UpdateConstructionImages(req: Request, res: Response) {
+        try {
+            const id = req.params;
+            const images = req.files;
+
+            console.log(id);
+            console.log(images);
+
+            console.log(images);
+
+            if (!images) {
+                return res.status(400).json({ message: 'No images uploaded' });
+            };
+
+            const result = await ConstructionBD.UpdateConstructionImages(id, images);
+
+            if (result != undefined) {
+                if (result.status) {
+                    res.status(201);
+                    res.send('Image updated successfully!');
+                } else {
+                    res.status(406);
+                    res.send('Bad error to updated image');
+                };
+            };
+        } catch (error) {
+            console.error('Error update images');
+            res.status(500).json({ error: 'Internal server error, please, verify here: line 134 (UpdateConstructionImages on controller)' });
+        };
+    };
 };
 
 module.exports = new ConstructionController();
