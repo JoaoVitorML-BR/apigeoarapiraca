@@ -1,11 +1,11 @@
 const pg = require('knex')({
   client: 'pg',
   connection: {
-    host: "localhost",
-    port: "5433",
-    user: "joaovtsu",
+    host: "geoara",
+    port: "5432",
+    user: "geoara",
     database: "geoara",
-    password: "fita1904",
+    password: "login123",
   }
 });
 

@@ -27,15 +27,6 @@ interface Construction {
     longitude: number
 }
 
-// Path to save images
-const uploadDirectory = '/home/joaovt/Documents/imagesConstruction/';
-
-
-// Verify if directory alred exists
-if (!fs.existsSync(uploadDirectory)) {
-    fs.mkdirSync(uploadDirectory);
-}
-
 class ConstructionController {
     async findAllConstruction(req: Request, res: Response) {
         var construction: Construction[] = await ConstructionBD.findAllConstruction();
@@ -77,6 +68,7 @@ class ConstructionController {
             }
 
             console.log(constructionData);
+            console.log(images);
 
             await ConstructionBD.createConstructionWithImages(constructionData, images);
 
@@ -90,54 +82,24 @@ class ConstructionController {
     async UpdateConstructionInfos(req: Request, res: Response) {
         try {
             const constructionData = req.body;
-
-            const result = await ConstructionBD.UpdateConstructionInfos(constructionData);
-
-            if (result != undefined) {
-                if (result.status) {
-                    res.status(201);
-                    res.send('Construction updated successfully!');
-                } else {
-                    res.status(406);
-                    res.send('Bad error to updated construction');
-                }
-            }
-        } catch (error) {
-            console.error('Error update construction infos');
-            res.status(500).json({ error: 'Internal server error, please, verify here: line 134 (UpdateConstructionInfos on controller)' });
-        };
-    };
-
-    async UpdateConstructionImages(req: Request, res: Response) {
-        try {
-            const id = req.params;
-            const images = req.files;
-
-            console.log(id);
-            console.log(images);
-
-            console.log(images);
+            const images = req.files || [];
 
             if (!images) {
                 return res.status(400).json({ message: 'No images uploaded' });
-            };
-
-            const result = await ConstructionBD.UpdateConstructionImages(id, images);
-
-            if (result != undefined) {
-                if (result.status) {
-                    res.status(201);
-                    res.send('Image updated successfully!');
-                } else {
-                    res.status(406);
-                    res.send('Bad error to updated image');
-                };
-            };
+            }
+                
+            const result = await ConstructionBD.UpdateConstructionInfos(constructionData, images);
+    
+            if (result.status) {
+                res.status(201).json({ message: 'Construção atualizada com sucesso!' });
+            } else {
+                res.status(400).json({ error: result.err || 'Erro ao atualizar a construção.' });
+            }
         } catch (error) {
-            console.error('Error update images');
-            res.status(500).json({ error: 'Internal server error, please, verify here: line 134 (UpdateConstructionImages on controller)' });
-        };
-    };
+            console.error('Erro ao atualizar a construção:', error);
+            res.status(500).json({ error: 'Erro interno do servidor.' });
+        }
+    }    
 };
 
 module.exports = new ConstructionController();

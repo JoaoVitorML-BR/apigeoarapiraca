@@ -1,0 +1,4 @@
+sudo docker build -t geoara/dockernode .
+docker run -p 1952:1952 -d geoara/dockernode
+docker ps
+
