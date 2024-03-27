@@ -3,9 +3,9 @@
     import fs from 'fs';
     import path from 'path';
 
-    const imagesDirectory = '/usr/imagesConstruction';
+    const imagesDirectory = '/usr/imagesEquipment';
 
-    class ImageConstruction {
+    class ImageEquipment {
         async findImages(req: Request, res: Response) {
             try {
                 // Verifica se o diretório existe
@@ -30,7 +30,7 @@
             }
         };
 
-        async findConstructionImagesByName(req: Request, res: Response) {
+        async findEquipmentImagesByName(req: Request, res: Response) {
             try {
                 const { name } = req.params;
         
@@ -38,7 +38,7 @@
                     return res.status(404).json({ message: 'Diretório de imagens não encontrado' });
                 }
         
-                const imagePath = path.join(imagesDirectory, name); // Alteração aqui
+                const imagePath = path.join(imagesDirectory, name);
         
                 res.setHeader('Content-Type', 'application/json'); 
         
@@ -51,4 +51,4 @@
 
     }
 
-    export default ImageConstruction;
+    export default ImageEquipment;

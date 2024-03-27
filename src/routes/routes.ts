@@ -1,13 +1,13 @@
-import ImageConstruction from '../controller/ImageConstruction';
+import ImageEquipment from '../controller/ImageEquipment';
 import multer from "multer";
 
 const express2 = require("express");
-const ConstructionController = require('../controller/ConstructionController');
+const EquipmentController = require('../controller/EquipmentController');
 const router = express2.Router();
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, '/usr/imagesConstruction');
+        cb(null, '/usr/imagesEquipment');
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -17,20 +17,23 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-const imageConstruction = new ImageConstruction();
+const imageEquipment = new ImageEquipment();
 
-router.use("/construction/images", express2.static("/usr/imagesConstruction"));
-router.use("/construction/images/name/", express2.static("/usr/imagesConstruction"));
+// Images router
+router.use("/equipment/images", express2.static("/usr/imagesEquipment"));
+router.use("/equipment/images/name/", express2.static("/usr/imagesEquipment"));
 
-router.get('/construction/images', imageConstruction.findImages);
-router.get('/construction/images/name/:name', imageConstruction.findConstructionImagesByName);
+router.get('/equipment/images', imageEquipment.findImages);
+router.get('/equipment/images/name/:name', imageEquipment.findEquipmentImagesByName);
 
-router.post("/construction", upload.array('images', 5), ConstructionController.createConstruction);
+router.post("/equipment", upload.array('images', 5), EquipmentController.createEquipment);
 
-router.get("/construction", ConstructionController.findAllConstruction);
-router.get("/construction/:id", ConstructionController.findConstructionById);
-router.get("/construction/name/:name", ConstructionController.findConstructionByName);
+// Equipment routers
+router.get("/equipment", EquipmentController.findAllEquipment);
+router.get("/equipment/:id", EquipmentController.findEquipmentById);
+router.get("/equipment/name/:name", EquipmentController.findEquipmentByName);
+router.get("/equipment/filter/:subcategory", EquipmentController.findEquipmentByFilter);
 
-router.put('/construction-update-info/:id', upload.array('images', 5), ConstructionController.UpdateConstructionInfos);
+router.put('/equipment-update-info/:id', upload.array('images', 5), EquipmentController.UpdateEquipmentInfos);
 
 module.exports = router;

@@ -16,19 +16,20 @@ END $$;
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_database WHERE datname = 'geoara') THEN
-        CREATE TABLE IF NOT EXISTS construction(
-            id                          char(50) CONSTRAINT construction_id PRIMARY KEY,
-            construction_type           varchar(20)         NOT NULL,
-            construction_status         varchar(15)         NOT NULL,
-            mark_type                   varchar(20)         NOT NULL,
-            construction_name           varchar(40)         NOT NULL,
-            construction_desc           varchar(1000)        NOT NULL,
+        CREATE TABLE IF NOT EXISTS equipment(
+            id                       char(50) CONSTRAINT equipment_id PRIMARY KEY,
+            equipment_status         varchar(15)         NOT NULL,
+            mark_type                varchar(20)         NOT NULL,
+            equipment_name           varchar(40)         NOT NULL,
+            equipment_desc           varchar(1000)       NOT NULL,
+            equipment_category       varchar(50)         NOT NULL,
+            equipment_sub_category   varchar(50)         NOT NULL,
             date_init                   date                NOT NULL,
             date_prev                   date                NOT NULL,
 			latitude					double precision    NOT NULL,	
 			longitude					double precision    NOT NULL,
-            construction_image_name_file_path     char(700),
-            construction_image_path               char(700)
+            equipment_image_name_file_path     char(700),
+            equipment_image_path               char(700)
         );
     END IF;
 END $$;

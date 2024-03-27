@@ -10,6 +10,6 @@
     "skipLibCheck": true, /* Skip type checking all .d.ts files. */
     "rootDirs": ["."],
   },
-  "include": ["**/*.ts", "src/database/connection.js"],
+  "include": ["**/*.ts", "src/database/connection.js", "src/*.d.ts"],
   "exclude": ["node_modules"]
 }

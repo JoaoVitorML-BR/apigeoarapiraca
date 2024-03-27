@@ -1,9 +1,7 @@
-import {app} from '../index';
+import { app } from '../index';
 
 export default function Server() {
-    const PORT = 1952;
-    const HOST = '0.0.0.0';
-    app.listen(PORT, HOST, () => {
-        console.log("Servidor rodando na rota: http://localhost:1952");
+    app.listen(process.env.PORT_SEVER, process.env.HOST, () => {
+        console.log(`Servidor rodando na rota: http://localhost:${process.env.PORT_SEVER}`);
     });
 }
