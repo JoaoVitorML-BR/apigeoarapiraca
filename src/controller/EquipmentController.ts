@@ -1,30 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
+import { Equipment } from '../domains/Equipments';
 
 var EquipmentDB = require('../models/EquipmentModels');
-
-interface UploadedFile {
-    fieldname: string;
-    originalname: string;
-    encoding: string;
-    mimetype: string;
-    buffer: Buffer;
-    size: number;
-};
-
-interface Equipment {
-    equipment_type: string,
-    mark_type: string,
-    equipment_name: String,
-    equipment_desc: String,
-    equipment_status: string,
-    equipment_category: string,
-    equipment_sub_category: string,
-    date_init: string | Date,
-    date_prev: string | Date,
-    image_equipment: BinaryType,
-    latitude: number,
-    longitude: number
-};
 
 class EquipmentController {
     async findAllEquipment(req: Request, res: Response) {
@@ -59,7 +36,7 @@ class EquipmentController {
     };
 
     async findEquipmentByFilter(req: Request, res: Response) {
-        try{
+        try {
             var equipmentsFilter = req.params;
             let result;
             if (equipmentsFilter.status != 'todos') {

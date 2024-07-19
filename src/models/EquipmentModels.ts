@@ -1,6 +1,7 @@
 import { UUID } from "crypto";
 import path from "path";
 import { v4 as uuidv4 } from 'uuid';
+import { Equipment } from "../domains/Equipments";
 
 const fs = require("fs");
 
@@ -16,24 +17,9 @@ if (!fs.existsSync(uploadDirectory)) {
 //Delete folder
 if (fs.existsSync('/usr/imagesConstruction')) {
     fs.rm('/usr/imagesConstruction', { recursive: true });
-    console.log('Pasta deletada com sucesso.');
+    console.log('Folder deleted successfullyo.');
 } else {
-    console.log('O diretório não existe, não foi necessário deletar.');
-}
-
-interface Equipment {
-    equipment_type: string,
-    mark_type: string,
-    equipment_name: String,
-    equipment_desc: String,
-    equipment_status: string,
-    equipment_category: string,
-    equipment_sub_category: string,
-    date_init: string | Date,
-    date_prev: string | Date,
-    image_equipment: BinaryType,
-    latitude: number,
-    longitude: number,
+    console.log('The directory does not exist, there was no need to delete it.');
 }
 
 class EquipmentModels {
