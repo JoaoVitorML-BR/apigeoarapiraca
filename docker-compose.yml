@@ -1,22 +1,40 @@
+# @format
+
 version: "3"
 
 services:
   app:
     build: .
+    depends_on:
+      db:
+        condition: service_healthy
     command: npm start
     ports:
       - "1952:1952"
     volumes:
       - .:/usr/app
-  postgres:
-    container_name: geoara
+    networks:
+      - app_network
+   
+  db:
     image: postgres
     environment:
       POSTGRES_USER: geoara
       POSTGRES_PASSWORD: login123
-      POSTGRES_DB: geoara
+      POSTGRES_DB: geoara 
     volumes:
       - ./data:/var/lib/postgresql/data
       - ./db/migrations/query.sql:/docker-entrypoint-initdb.d/query.sql
     ports:
       - "5432:5432"
+    networks:
+      - app_network 
+    healthcheck:
+      test: ["CMD-SHELL", "psql -h localhost -U geoara -d geoara"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+networks:
+  app_network:
+    driver: bridge
