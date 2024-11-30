@@ -19,9 +19,9 @@ services:
   db:
     image: postgres
     environment:
-      POSTGRES_USER: geoara
-      POSTGRES_PASSWORD: 1234
-      POSTGRES_DB: geoara 
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB} 
     volumes:
       - ./data:/var/lib/postgresql/data
       - ./db/migrations/query.sql:/docker-entrypoint-initdb.d/query.sql
