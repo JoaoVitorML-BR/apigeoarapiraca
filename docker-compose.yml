@@ -20,13 +20,13 @@ services:
     image: postgres
     environment:
       POSTGRES_USER: geoara
-      POSTGRES_PASSWORD: login123
+      POSTGRES_PASSWORD: 1234
       POSTGRES_DB: geoara 
     volumes:
       - ./data:/var/lib/postgresql/data
       - ./db/migrations/query.sql:/docker-entrypoint-initdb.d/query.sql
     ports:
-      - "5432:5432"
+      - "5433:5432"
     networks:
       - app_network 
     healthcheck:
