@@ -3,16 +3,13 @@
 version: "3"
 
 services:
-  app:
-    build: .
+  api:
+    image: joaovitormlbr/geoara-devops:${DOCKER_IMAGE_TAG}
     depends_on:
       db:
         condition: service_healthy
-    command: npm start
-    ports:
-      - "1952:1952"
-    volumes:
-      - .:/usr/app
+    ports: 
+      - "3000:3000"
     networks:
       - app_network
    
