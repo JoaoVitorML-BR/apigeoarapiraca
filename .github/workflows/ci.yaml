@@ -104,8 +104,6 @@ jobs:
               fi
               #Run a new container from a new image
               docker-compose up -d --build
-
-              #a
               
 
         
