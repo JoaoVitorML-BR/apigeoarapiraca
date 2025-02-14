@@ -95,26 +95,31 @@ jobs:
               [ -e .env ] && rm .env
               touch .env
               echo  "DOCKER_IMAGE_TAG=$TAG" > .env
+
+              # Check if .env exists before continuing
+              if [ ! -f .env ]; then
+                echo ".env file not found! Exiting."
+                exit 1
+              fi
+
               # Login Docker
               docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-              #Stop Containers
+              
+              # Stop Containers
               CONTAINERS=$(docker ps -q)
               if [ -n "$CONTAINERS" ]; then
                 docker stop $CONTAINERS
               else
-                echo " No running containers"
+                echo "No running containers"
               fi
-              #Remove Old Containers
+
+              # Remove Old Containers
               CONTAINERS=$(docker ps -a -q)
               if [ -n "$CONTAINERS" ]; then
                 docker rm $CONTAINERS
               else
-                echo " No containers to remove"
+                echo "No containers to remove"
               fi
-              #Run a new container from a new image
+
+              # Run a new container from a new image
               docker-compose up -d --build
-              
-
-        
-
-          #a
