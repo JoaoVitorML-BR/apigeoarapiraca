@@ -3,106 +3,103 @@ name: CI
 on:
   push:
     branches:
-        - main
+      - main
   pull_request:
     branches:
-        - main
+      - main
 
 jobs:
-    build:
-        name: 'Build and Push'
-        runs-on: ${{ matrix.os }}
-        outputs:
-          docker_tag: ${{ steps.generate_tag.outputs.sha }}
+  build:
+    name: 'Build and Push'
+    runs-on: ${{ matrix.os }}
+    outputs:
+      docker_tag: ${{ steps.generate_tag.outputs.sha }}
 
-        strategy:
-            matrix:
-                node-version: [22]
-                os: [ubuntu-latest]
-        
-        steps:
-            - name: Checkout source code
-              uses: actions/checkout@v4
+    strategy:
+      matrix:
+        node-version: [22]
+        os: [ubuntu-latest]
+    
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
 
-            - name: Setup NodeJs
-              uses: actions/setup-node@v4
-              with:
-                node-version: ${{ matrix.node-version }}
-                cache: 'npm'
-            
-            - name: Install dependencies
-              run: npm install
-            
-            # - name: Running Tests
-            #   run: npm test
+      - name: Setup NodeJs
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm install
 
-            - name: Generate Tag
-              id: generate_tag
-              run: |
-                  SHA=$(echo $GITHUB_SHA | head -c7)
-                  echo "sha=$SHA" >> $GITHUB_OUTPUT
+      # - name: Running Tests
+      #   run: npm test
 
-            - name: Login into the Container Registry
-              uses: docker/login-action@v3
-              with:
-                username: ${{ secrets.DOCKERHUB_USERNAME }}
-                password: ${{ secrets.DOCKERHUB_TOKEN }}
-            
-            - name: Build Docker Image
-              run: docker build -t joaovitormlbr/geoara-devops:${{ steps.generate_tag.outputs.sha }} .
-  
+      - name: Generate Tag
+        id: generate_tag
+        run: |
+          SHA=$(echo $GITHUB_SHA | head -c7)
+          echo "sha=$SHA" >> $GITHUB_OUTPUT
 
-            - name: Push Docker Image to DockerHub
-              run: docker push joaovitormlbr/geoara-devops:${{ steps.generate_tag.outputs.sha }}
+      - name: Login into the Container Registry
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Build Docker Image
+        run: docker build -t joaovitormlbr/geoara-devops:${{ steps.generate_tag.outputs.sha }} .
 
-    deploy:
-      name: Deploy on Digital Ocean
-      runs-on: ubuntu-latest
-      needs: build
+      - name: Push Docker Image to DockerHub
+        run: docker push joaovitormlbr/geoara-devops:${{ steps.generate_tag.outputs.sha }}
 
-      steps:
-        - name: Deploy on Digital Ocean via ssh
-          uses: appleboy/ssh-action@v0.1.3
-          with:
-            host: ${{ secrets.HOST }}
-            username: ${{ secrets.USER }}
-            password: ${{ secrets.PASSWORD }}
-            script: |
-              # Extrair o tag da construção
-              TAG=${{ needs.build.outputs.docker_tag }}
+  deploy:
+    name: Deploy on Digital Ocean
+    runs-on: ubuntu-latest
+    needs: build
 
-              # Verificar se o .env já existe, caso contrário, criar
-              if [ ! -f .env ]; then
-                echo ".env não encontrado! Criando um novo arquivo."
-                touch .env
-              fi
+    steps:
+      - name: Deploy on Digital Ocean via ssh
+        uses: appleboy/ssh-action@v0.1.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          password: ${{ secrets.PASSWORD }}
+          script: |
+            # Extrair o tag da construção
+            TAG=${{ needs.build.outputs.docker_tag }}
 
-              # Adicionar/Atualizar DOCKER_IMAGE_TAG no .env
-              echo "DOCKER_IMAGE_TAG=$TAG" >> .env
+            # Verificar se o .env já existe, caso contrário, criar
+            if [ ! -f .env ]; then
+              echo ".env não encontrado! Criando um novo arquivo."
+              touch .env
+            fi
+
+            # Adicionar/Atualizar DOCKER_IMAGE_TAG no .env
+            echo "DOCKER_IMAGE_TAG=$TAG" >> .env
               
-              # Copiar o arquivo .env-ps do repositório para o servidor
-              scp ./path/to/.env-ps ${secrets.USER}@${secrets.HOST}:/path/to/destination/.env-ps
+            # Copiar o arquivo .env-ps do repositório para o servidor
+            scp ./.env-ps ${secrets.USER}@${secrets.HOST}:/env-ps
 
-              # Login no Docker
-              docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+            # Login no Docker
+            docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
               
-              # Parar os containers
-              CONTAINERS=$(docker ps -q)
-              if [ -n "$CONTAINERS" ]; then
-                docker stop $CONTAINERS
-              else
-                echo "Nenhum container em execução"
-              fi
+            # Parar os containers
+            CONTAINERS=$(docker ps -q)
+            if [ -n "$CONTAINERS" ]; then
+              docker stop $CONTAINERS
+            else
+              echo "Nenhum container em execução"
+            fi
 
-              # Remover containers antigos
-              CONTAINERS=$(docker ps -a -q)
-              if [ -n "$CONTAINERS" ]; then
-                docker rm $CONTAINERS
-              else
-                echo "Nenhum container para remover"
-              fi
+            # Remover containers antigos
+            CONTAINERS=$(docker ps -a -q)
+            if [ -n "$CONTAINERS" ]; then
+              docker rm $CONTAINERS
+            else
+              echo "Nenhum container para remover"
+            fi
 
-              # Subir um novo container com a nova imagem
-              docker-compose up -d --build
-
-              #a
+            # Subir um novo container com a nova imagem
+            docker-compose up -d --build

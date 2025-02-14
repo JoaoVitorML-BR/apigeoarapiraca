@@ -16,7 +16,7 @@ services:
   db:
     image: postgres
     env_file:
-      - .env-ps   
+      - .env-ps  # Usa o arquivo .env-ps com variáveis sensíveis
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -29,7 +29,8 @@ services:
     networks:
       - app_network
     healthcheck:
-      test: ["CMD-SHELL", "psql -h localhost -U geoara -d geoara"]
+      # Ajustado para usar pg_isready, uma forma mais robusta de checar a saúde do PostgreSQL
+      test: ["CMD-SHELL", "pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 10s
       retries: 5
