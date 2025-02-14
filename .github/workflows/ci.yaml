@@ -61,65 +61,54 @@ jobs:
       needs: build
 
       steps:
-        - name: Checkout source code
-          uses: actions/checkout@v4
-
-        - name: Copy .env file via ssh
-          uses: appleboy/scp-action@v0.1.7
-          with:
-            host: ${{ secrets.HOST }}
-            username: ${{ secrets.USER }}
-            password: ${{ secrets.PASSWORD }}
-            source: "./.env"
-            target: "~/"
-
-        - name: Copy docker-compose file via ssh
-          uses: appleboy/scp-action@v0.1.7
-          with:
-            host: ${{ secrets.HOST }}
-            username: ${{ secrets.USER }}
-            password: ${{ secrets.PASSWORD }}
-            source: "./docker-compose.yaml"
-            target: "~/"
-
-        - name: Deploy on Digital Ocean via ssh 
+        - name: Deploy on Digital Ocean via ssh
           uses: appleboy/ssh-action@v0.1.3
           with:
             host: ${{ secrets.HOST }}
             username: ${{ secrets.USER }}
             password: ${{ secrets.PASSWORD }}
             script: |
-              # Extract the tag on job build
+              # Extrair o tag da construção
               TAG=${{ needs.build.outputs.docker_tag }}
-              # Create env file
-              [ -e .env ] && rm .env
-              touch .env
-              echo  "DOCKER_IMAGE_TAG=$TAG" > .env
 
-              # Check if .env exists before continuing
+              # Verificar se o .env já existe, caso contrário, criar
               if [ ! -f .env ]; then
-                echo ".env file not found! Exiting."
-                exit 1
+                echo ".env não encontrado! Criando um novo arquivo."
+                touch .env
               fi
 
-              # Login Docker
+              # Adicionar/Atualizar DOCKER_IMAGE_TAG no .env
+              echo "DOCKER_IMAGE_TAG=$TAG" >> .env
+              
+              # Garantir que variáveis do PostgreSQL estejam no .env
+              if ! grep -q POSTGRES_USER .env; then
+                echo "POSTGRES_USER=seu_usuario" >> .env
+              fi
+              if ! grep -q POSTGRES_PASSWORD .env; then
+                echo "POSTGRES_PASSWORD=sua_senha" >> .env
+              fi
+              if ! grep -q POSTGRES_DB .env; then
+                echo "POSTGRES_DB=seu_banco" >> .env
+              fi
+
+              # Login no Docker
               docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
               
-              # Stop Containers
+              # Parar os containers
               CONTAINERS=$(docker ps -q)
               if [ -n "$CONTAINERS" ]; then
                 docker stop $CONTAINERS
               else
-                echo "No running containers"
+                echo "Nenhum container em execução"
               fi
 
-              # Remove Old Containers
+              # Remover containers antigos
               CONTAINERS=$(docker ps -a -q)
               if [ -n "$CONTAINERS" ]; then
                 docker rm $CONTAINERS
               else
-                echo "No containers to remove"
+                echo "Nenhum container para remover"
               fi
 
-              # Run a new container from a new image
+              # Subir um novo container com a nova imagem
               docker-compose up -d --build
