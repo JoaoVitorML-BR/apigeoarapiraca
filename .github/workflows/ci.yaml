@@ -104,3 +104,5 @@ jobs:
 
               # Subir um novo container com a nova imagem
               docker-compose up -d --build
+
+              #a
