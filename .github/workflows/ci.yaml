@@ -80,16 +80,8 @@ jobs:
               # Adicionar/Atualizar DOCKER_IMAGE_TAG no .env
               echo "DOCKER_IMAGE_TAG=$TAG" >> .env
               
-              # Garantir que variáveis do PostgreSQL estejam no .env
-              if ! grep -q POSTGRES_USER .env; then
-                echo "POSTGRES_USER=seu_usuario" >> .env
-              fi
-              if ! grep -q POSTGRES_PASSWORD .env; then
-                echo "POSTGRES_PASSWORD=sua_senha" >> .env
-              fi
-              if ! grep -q POSTGRES_DB .env; then
-                echo "POSTGRES_DB=seu_banco" >> .env
-              fi
+              # Copiar o arquivo .env-ps do repositório para o servidor
+              scp ./path/to/.env-ps ${secrets.USER}@${secrets.HOST}:/path/to/destination/.env-ps
 
               # Login no Docker
               docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
