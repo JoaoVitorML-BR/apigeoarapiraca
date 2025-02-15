@@ -60,6 +60,11 @@ jobs:
     needs: build
 
     steps:
+      - name: Add SSH key to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+
       - name: Deploy on Digital Ocean via ssh
         uses: appleboy/ssh-action@v0.1.3
         with:
