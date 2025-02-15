@@ -54,63 +54,51 @@ jobs:
       - name: Push Docker Image to DockerHub
         run: docker push joaovitormlbr/geoara-devops:${{ steps.generate_tag.outputs.sha }}
 
-  deploy:
-    name: Deploy on Digital Ocean
-    runs-on: ubuntu-latest
-    needs: build
+    deploy:
+      name: Deploy on Digital Ocean
+      runs-on: ubuntu-latest
+      needs: build
 
-    steps:
-      - name: Add SSH key to known_hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+      steps:
+        - name: Add SSH key to known_hosts
+          run: |
+            mkdir -p ~/.ssh
+            ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+            echo "StrictHostKeyChecking no" >> ~/.ssh/config  # Desativa a verificação de chave
 
-      - name: Deploy on Digital Ocean via ssh
-        uses: appleboy/ssh-action@v0.1.3
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          password: ${{ secrets.PASSWORD }}
-          script: |
-            # Extrair o tag da construção
-            TAG=${{ needs.build.outputs.docker_tag }}
-        
-            # Verificar se o .env já existe, caso contrário, criar
-            if [ ! -f .env ]; then
-              echo ".env não encontrado! Criando um novo arquivo."
-              touch .env
-            fi
-        
-            # Adicionar/Atualizar DOCKER_IMAGE_TAG no .env
-            echo "DOCKER_IMAGE_TAG=$TAG" >> .env
-            
-            # Verificar se o arquivo .env-ps já existe no servidor
-            if ssh ${{ secrets.USER }}@${{ secrets.HOST }} "[ -f ~/.env-ps ]"; then
-              echo "O arquivo .env-ps já existe no servidor. Fazendo backup..."
-              ssh ${{ secrets.USER }}@${{ secrets.HOST }} "cp ~/.env-ps ~/.env-ps.backup"
-            fi
+        - name: Deploy on Digital Ocean via ssh
+          uses: appleboy/ssh-action@v0.1.3
+          with:
+            host: ${{ secrets.HOST }}
+            username: ${{ secrets.USER }}
+            password: ${{ secrets.PASSWORD }}
+            script: |
+              # Extrair o tag da construção
+              TAG=${{ needs.build.outputs.docker_tag }}
+              
+              # Verificar se o .env já existe, caso contrário, criar
+              if [ ! -f .env ]; then
+                echo ".env não encontrado! Criando um novo arquivo."
+                touch .env
+              fi
 
-            # Copiar o arquivo .env-ps para o servidor
-            scp ./.env-ps ${{ secrets.USER }}@${{ secrets.HOST }}:~/.env-ps
-        
-            # Login no Docker
-            docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-            
-            # Parar os containers
-            CONTAINERS=$(docker ps -q)
-            if [ -n "$CONTAINERS" ]; then
-              docker stop $CONTAINERS
-            else
-              echo "Nenhum container em execução"
-            fi
-        
-            # Remover containers antigos
-            CONTAINERS=$(docker ps -a -q)
-            if [ -n "$CONTAINERS" ]; then
-              docker rm $CONTAINERS
-            else
-              echo "Nenhum container para remover"
-            fi
-        
-            # Subir um novo container com a nova imagem
-            docker-compose up -d --build
+              # Adicionar/Atualizar DOCKER_IMAGE_TAG no .env
+              echo "DOCKER_IMAGE_TAG=$TAG" >> .env
+              
+              # Verificar se o arquivo .env-ps já existe no servidor
+              if ssh ${{ secrets.USER }}@${{ secrets.HOST }} "[ -f ~/.env-ps ]"; then
+                echo "O arquivo .env-ps já existe no servidor. Fazendo backup..."
+                ssh ${{ secrets.USER }}@${{ secrets.HOST }} "cp ~/.env-ps ~/.env-ps.backup"
+              fi
+
+              # Copiar o arquivo .env-ps para o servidor
+              scp ./.env-ps ${{ secrets.USER }}@${{ secrets.HOST }}:~/.env-ps
+
+              # Verificar se o arquivo docker-compose.yml está presente
+              if [ ! -f docker-compose.yml ]; then
+                echo "docker-compose.yml não encontrado. Abortando deploy."
+                exit 1
+              fi
+
+              # Subir um novo container com a nova imagem
+              docker-compose up -d --build
