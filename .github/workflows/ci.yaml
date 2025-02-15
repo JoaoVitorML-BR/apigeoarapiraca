@@ -69,19 +69,25 @@ jobs:
           script: |
             # Extrair o tag da construção
             TAG=${{ needs.build.outputs.docker_tag }}
-      
+        
             # Verificar se o .env já existe, caso contrário, criar
             if [ ! -f .env ]; then
               echo ".env não encontrado! Criando um novo arquivo."
               touch .env
             fi
-      
+        
             # Adicionar/Atualizar DOCKER_IMAGE_TAG no .env
             echo "DOCKER_IMAGE_TAG=$TAG" >> .env
             
-            # Copiar o arquivo .env-ps do repositório para o servidor
-            scp ./.env-ps ${{ secrets.USER }}@${{ secrets.HOST }}:/env-ps
-      
+            # Verificar se o arquivo .env-ps já existe no servidor
+            if ssh ${{ secrets.USER }}@${{ secrets.HOST }} "[ -f ~/.env-ps ]"; then
+              echo "O arquivo .env-ps já existe no servidor. Fazendo backup..."
+              ssh ${{ secrets.USER }}@${{ secrets.HOST }} "cp ~/.env-ps ~/.env-ps.backup"
+            fi
+
+            # Copiar o arquivo .env-ps para o servidor
+            scp ./.env-ps ${{ secrets.USER }}@${{ secrets.HOST }}:~/.env-ps
+        
             # Login no Docker
             docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
             
@@ -92,7 +98,7 @@ jobs:
             else
               echo "Nenhum container em execução"
             fi
-      
+        
             # Remover containers antigos
             CONTAINERS=$(docker ps -a -q)
             if [ -n "$CONTAINERS" ]; then
@@ -100,7 +106,6 @@ jobs:
             else
               echo "Nenhum container para remover"
             fi
-      
+        
             # Subir um novo container com a nova imagem
             docker-compose up -d --build
-      
