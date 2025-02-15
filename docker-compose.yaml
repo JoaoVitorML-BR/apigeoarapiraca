@@ -16,7 +16,7 @@ services:
   db:
     image: postgres
     env_file:
-      - .env-ps  # Usa o arquivo .env-ps com variáveis sensíveis
+      - .env 
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
