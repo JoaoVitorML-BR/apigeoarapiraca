@@ -79,6 +79,14 @@ jobs:
           echo "POSTGRES_PASSWORD=1234" >> .env.prod
           echo "POSTGRES_DB=geoara" >> .env.prod
 
+      - name: Copy .env.prod file via ssh
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          password: ${{ secrets.PASSWORD }}
+          source: ".env.prod"
+          target: "~/"
 
       - name: Deploy on Digital Ocean via ssh 
         uses: appleboy/ssh-action@v0.1.3
@@ -87,12 +95,6 @@ jobs:
           username: ${{ secrets.USER }}
           password: ${{ secrets.PASSWORD }}
           script: |
-            # Cria o arquivo .env.prod com as variáveis necessárias
-            echo "DOCKER_IMAGE_TAG=${{ needs.build.outputs.docker_tag }}" > .env.prod
-            echo "POSTGRES_USER=geoara" >> .env.prod
-            echo "POSTGRES_PASSWORD=1234" >> .env.prod
-            echo "POSTGRES_DB=geoara" >> .env.prod
-            
             # Login no Docker
             docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
             # Para containers em execução
@@ -110,5 +112,4 @@ jobs:
               echo "No containers to remove"
             fi
             # Executa o docker-compose para subir os containers
-            docker-compose up -d --build
-      
+            docker-compose --env-file ~/.env.prod up -d --build
