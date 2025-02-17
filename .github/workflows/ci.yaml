@@ -80,35 +80,35 @@ jobs:
           echo "POSTGRES_DB=geoara" >> .env.prod
 
 
-          - name: Deploy on Digital Ocean via ssh 
-          uses: appleboy/ssh-action@v0.1.3
-          with:
-            host: ${{ secrets.HOST }}
-            username: ${{ secrets.USER }}
-            password: ${{ secrets.PASSWORD }}
-            script: |
-              # Cria o arquivo .env.prod com as variáveis necessárias
-              echo "DOCKER_IMAGE_TAG=${{ needs.build.outputs.docker_tag }}" > .env.prod
-              echo "POSTGRES_USER=geoara" >> .env.prod
-              echo "POSTGRES_PASSWORD=1234" >> .env.prod
-              echo "POSTGRES_DB=geoara" >> .env.prod
-              
-              # Login no Docker
-              docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-              # Para containers em execução
-              CONTAINERS=$(docker ps -q)
-              if [ -n "$CONTAINERS" ]; then
-                docker stop $CONTAINERS
-              else
-                echo "No running containers"
-              fi
-              # Remove containers antigos
-              CONTAINERS=$(docker ps -a -q)
-              if [ -n "$CONTAINERS" ]; then
-                docker rm $CONTAINERS
-              else
-                echo "No containers to remove"
-              fi
-              # Executa o docker-compose para subir os containers
-              docker-compose up -d --build
-        
+      - name: Deploy on Digital Ocean via ssh 
+        uses: appleboy/ssh-action@v0.1.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          password: ${{ secrets.PASSWORD }}
+          script: |
+            # Cria o arquivo .env.prod com as variáveis necessárias
+            echo "DOCKER_IMAGE_TAG=${{ needs.build.outputs.docker_tag }}" > .env.prod
+            echo "POSTGRES_USER=geoara" >> .env.prod
+            echo "POSTGRES_PASSWORD=1234" >> .env.prod
+            echo "POSTGRES_DB=geoara" >> .env.prod
+            
+            # Login no Docker
+            docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+            # Para containers em execução
+            CONTAINERS=$(docker ps -q)
+            if [ -n "$CONTAINERS" ]; then
+              docker stop $CONTAINERS
+            else
+              echo "No running containers"
+            fi
+            # Remove containers antigos
+            CONTAINERS=$(docker ps -a -q)
+            if [ -n "$CONTAINERS" ]; then
+              docker rm $CONTAINERS
+            else
+              echo "No containers to remove"
+            fi
+            # Executa o docker-compose para subir os containers
+            docker-compose up -d --build
+      
