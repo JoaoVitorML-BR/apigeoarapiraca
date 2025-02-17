@@ -11,12 +11,10 @@ services:
     networks:
       - app_network
     env_file:
-      - .env
+      - .env.prod
 
   db:
     image: postgres
-    env_file:
-      - .env
     environment:
       POSTGRES_USER: geoara
       POSTGRES_PASSWORD: 1234
