@@ -7,7 +7,7 @@ services:
       db:
         condition: service_healthy
     ports:
-      - "3000:1952"
+      - "3000:3000"
     networks:
       - app_network
     env_file:
