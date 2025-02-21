@@ -44,7 +44,11 @@ class EquipmentModels {
                 .table('equipment');
     
             if (result.length === 0) {
-                return [{
+                return [
+                    {
+                        "status": 200
+                    },
+                    {
                     id: 'sem dados',
                     equipment_status: 'sem dados',
                     mark_type: 'sem dados',
