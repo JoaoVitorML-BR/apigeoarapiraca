@@ -42,17 +42,49 @@ class EquipmentModels {
                     'equipment_image_path'
                 ])
                 .table('equipment');
-
+    
+            if (result.length === 0) {
+                return [{
+                    id: 'sem dados',
+                    equipment_status: 'sem dados',
+                    mark_type: 'sem dados',
+                    equipment_name: 'sem dados',
+                    equipment_desc: 'sem dados',
+                    equipment_category: 'sem dados',
+                    equipment_sub_category: 'sem dados',
+                    date_init: 'sem dados',
+                    date_prev: 'sem dados',
+                    latitude: 'sem dados',
+                    longitude: 'sem dados',
+                    equipment_image_name_file_path: ['sem dados'],
+                    equipment_image_path: ['sem dados']
+                }];
+            }
+    
             result.forEach((equipment: any) => {
                 equipment.equipment_image_name_file_path = equipment.equipment_image_name_file_path.split(',');
                 equipment.equipment_image_path = equipment.equipment_image_path.split(',');
             });
-            console.log('')
+    
             return result;
         } catch (erro) {
             console.log(erro);
-            return [];
-        };
+            return [{
+                id: 'sem dados',
+                equipment_status: 'sem dados',
+                mark_type: 'sem dados',
+                equipment_name: 'sem dados',
+                equipment_desc: 'sem dados',
+                equipment_category: 'sem dados',
+                equipment_sub_category: 'sem dados',
+                date_init: 'sem dados',
+                date_prev: 'sem dados',
+                latitude: 'sem dados',
+                longitude: 'sem dados',
+                equipment_image_name_file_path: ['sem dados'],
+                equipment_image_path: ['sem dados']
+            }];
+        }
     };
 
     async findEquipmentByFilter(equipment_sub_category: Equipment) {
